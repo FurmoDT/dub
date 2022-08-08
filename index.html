@@ -7,7 +7,6 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.2.min.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.2.min.js"></script>
@@ -23,6 +22,7 @@
         - pandas
         - panel==0.13.1a2
         - xlrd
+        - ./python_docx-0.8.11-py2.py3-none-any.whl
     </py-env>
 </head>
 
@@ -48,21 +48,41 @@ import panel as pn
 import pandas as pd
 from panel.io.pyodide import show
 
+from docx import Document
+from docx.oxml.ns import qn
+import docx
+
 file_input = pn.widgets.FileInput(accept='.xls', width=180)
-button_upload = pn.widgets.Button(name='Upload', button_type='primary', width=100)
-row = pn.Row(file_input, button_upload, height=75)
 
-table = pn.widgets.Tabulator(pagination='remote', page_size=10)
-document.getElementById('table').style.display = 'none'
-
-def process_file(event):
+def process_file():
     if file_input.value is not None:
         df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
-        table.value = df
-        print(df)
-        document.getElementById('table').style.display = 'block'
+        value = df.values.tolist()
+        filename_save = file_input.filename.split('.')[0]
+        doc = Document()
+        style = doc.styles['Normal']
+        style.font.size = docx.shared.Pt(10)
+        title = doc.add_paragraph()
+        run = title.add_run(filename_save)
+        run.bold = True
+        run.font.size = docx.shared.Pt(16)
 
-button_upload.on_click(process_file)
+        for i in value:
+            br = doc.add_paragraph()
+            tc_in = doc.add_paragraph()
+            source = doc.add_paragraph()
+            target = doc.add_paragraph()
+            br.add_run('')
+            tc_in.add_run(i[1])
+            source.add_run(i[3])
+            target.add_run(i[4])
+    file_stream = io.BytesIO()
+    doc.save(file_stream)
+    file_stream.seek(0)
+    return file_stream
+file_download = pn.widgets.FileDownload(filename="data.docx", callback=process_file, button_type="primary")
+
+row = pn.Row(file_input, file_download, height=75)
 
 await show(row, 'fileinput')
 await show(table, 'table')
