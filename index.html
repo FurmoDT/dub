@@ -15,6 +15,7 @@
       Bokeh.set_log_level("info");
     </script>
 
+    <meta charset="utf-8">
     <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
     <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
     <py-env>
@@ -31,14 +32,14 @@
         <nav class="navbar navbar-expand-md navbar-dark sticky-top shadow" id="header"
             style="background-color: #0f54ea;">
             <div class="app-header">
-                <a class="title" href="" style="color: #f7f6f3;">PyScript - Python in the Browser</a>
+                <a class="title" href="" style="color: #f7f6f3;">더빙 대본 생성</a>
             </div>
         </nav>
 
         <div class="row overflow-hidden" id="content">
             <div class="col mh-100 float-left" id="main">
                 <div id="fileinput"></div>
-                <div id="table"></div>
+                <div id="filedownload"></div>
             </div>
         </div>
     </div>
@@ -53,39 +54,78 @@ from docx.oxml.ns import qn
 import docx
 
 file_input = pn.widgets.FileInput(accept='.xls', width=180)
+upload_button = pn.widgets.Button(name='Upload', button_type = 'primary', width= 100)
 
-def process_file():
-    if file_input.value is not None:
-        df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
-        value = df.values.tolist()
-        filename_save = file_input.filename.split('.')[0]
-        doc = Document()
-        style = doc.styles['Normal']
-        style.font.size = docx.shared.Pt(10)
-        title = doc.add_paragraph()
-        run = title.add_run(filename_save)
-        run.bold = True
-        run.font.size = docx.shared.Pt(16)
+def process_file_narration():
+    df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
+    value = df.values.tolist()
+    filename_save = file_input.filename.split('.')[0]
+    doc = Document()
+    style = doc.styles['Normal']
+    style.font.size = docx.shared.Pt(10)
+    title = doc.add_paragraph()
+    run = title.add_run(filename_save)
+    run.bold = True
+    run.font.size = docx.shared.Pt(16)
 
-        for i in value:
-            br = doc.add_paragraph()
-            tc_in = doc.add_paragraph()
-            source = doc.add_paragraph()
-            target = doc.add_paragraph()
-            br.add_run('')
-            tc_in.add_run(i[1])
-            source.add_run(i[3])
-            target.add_run(i[4])
+    for i in value:
+        br = doc.add_paragraph()
+        tc_in = doc.add_paragraph()
+        source = doc.add_paragraph()
+        target = doc.add_paragraph()
+        br.add_run('')
+        tc_in.add_run(i[1])
+        source.add_run(i[3])
+        target.add_run(i[4])
     file_stream = io.BytesIO()
     doc.save(file_stream)
     file_stream.seek(0)
     return file_stream
-file_download = pn.widgets.FileDownload(filename="data.docx", callback=process_file, button_type="primary")
 
-row = pn.Row(file_input, file_download, height=75)
+
+def process_file_animation():
+    df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
+    value = df.values.tolist()
+    filename_save = file_input.filename.split('.')[0]
+    doc = Document()
+    style = doc.styles['Normal']
+    style.font.size = docx.shared.Pt(10)
+    title = doc.add_paragraph()
+    run = title.add_run(filename_save)
+    run.bold = True
+    run.font.size = docx.shared.Pt(16)
+
+    for i in value:
+        br = doc.add_paragraph()
+        tc_in = doc.add_paragraph()
+        source = doc.add_paragraph()
+        target = doc.add_paragraph()
+        br.add_run('')
+        tc_in.add_run(i[1])
+        source.add_run(i[3])
+        target.add_run(i[4])
+    file_stream = io.BytesIO()
+    doc.save(file_stream)
+    file_stream.seek(0)
+    return file_stream
+
+
+file_download_narration = pn.widgets.FileDownload(filename="docx", callback=process_file_narration,
+                                        button_type="primary", disabled=True, name="내레이션용 대본")
+file_download_animation = pn.widgets.FileDownload(filename="docx", callback=process_file_animation,
+                                        button_type="primary", disabled=True, name="애니메이션용 대본")
+def upload_file(event):
+    if file_input.value is not None:
+        file_download_narration.filename = file_download_animation.filename = file_input.filename.split('.')[0]+".docx"
+        file_download_narration.disabled = file_download_animation.disabled = False
+
+
+upload_button.on_click(upload_file)
+row = pn.Row(file_input, upload_button, height=75)
+row2 = pn.Row(file_download_narration, file_download_animation, height=75)
 
 await show(row, 'fileinput')
-await show(table, 'table')
+await show(row2, 'filedownload')
     </py-script>
 </body>
 
