@@ -98,7 +98,7 @@ class ProcessNarration:
             br.add_run('')
             tc_in.add_run(i[1])
             source.add_run(i[3])
-            target.add_run(i[4])
+            target.add_run(i[4 + self.language_num])
         self.file_stream = io.BytesIO()
         doc.save(self.file_stream)
         self.file_stream.seek(0)
