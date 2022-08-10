@@ -104,11 +104,11 @@ class ProcessNarration:
         self.file_stream.seek(0)
         return self.file_stream
 
-<!--def process_file_animation():-->
-<!--    value, doc = read_input()-->
-<!--    return-->
-<!--file_download_animation = pn.widgets.FileDownload(filename="docx", callback=process_file_animation,-->
-<!--                                                  button_type="primary", disabled=True, name="애니메이션용 대본")-->
+def process_file_animation():
+    return
+file_download_animation = pn.widgets.FileDownload(filename="{}.docx".format(data['filename'],
+                                                  callback=process_file_animation,
+                                                  button_type="primary", disabled=True, name="애니메이션용 대본")
 
 def upload_file(event):
     read_input()
@@ -118,7 +118,7 @@ def upload_file(event):
                                                        callback=ProcessNarration(i),
                                                        button_type="primary",
                                                        name="{} 대본".format(data['columns'][3] + '+' + j)) for i, j in enumerate(data['columns'][4:]))
-        row_download.append(pn.Column(*narration_downloads))
+        row_download.extend([pn.Column(*narration_downloads), file_download_animation])
     except TypeError:
         return
     return
