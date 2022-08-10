@@ -106,7 +106,7 @@ class ProcessNarration:
 
 def process_file_animation():
     return
-file_download_animation = pn.widgets.FileDownload(filename="{}.docx".format(data['filename'],
+file_download_animation = pn.widgets.FileDownload(filename="{}.docx".format(data['filename']),
                                                   callback=process_file_animation,
                                                   button_type="primary", disabled=True, name="애니메이션용 대본")
 
