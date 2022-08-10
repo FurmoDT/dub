@@ -4,9 +4,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://unpkg.com/@holoviz/panel@0.13.0/dist/bundled/bootstraptemplate/bootstrap.css">
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.2.min.js"></script>
     <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.2.min.js"></script>
@@ -61,6 +58,7 @@ upload_button = pn.widgets.Button(name='Upload', button_type = 'primary', width=
 
 def read_input():
     df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
+    df = df.where(pd.notnull(df), None)
     value = df.values.tolist()
     filename_save = file_input.filename.split('.')[0]
     doc = Document()
@@ -94,12 +92,13 @@ def process_file_narration():
 
 
 def process_file_animation():
+    value, doc = read_input()
     return
 
 file_download_narration = pn.widgets.FileDownload(filename="docx", callback=process_file_narration,
-                                        button_type="primary", disabled=True, name="내레이션용 대본")
+                                                  button_type="primary", disabled=True, name="내레이션용 대본")
 file_download_animation = pn.widgets.FileDownload(filename="docx", callback=process_file_animation,
-                                        button_type="primary", disabled=True, name="애니메이션용 대본")
+                                                  button_type="primary", disabled=True, name="애니메이션용 대본")
 
 
 def upload_file(event):
