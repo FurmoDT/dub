@@ -85,6 +85,7 @@ def create_doc():
     run.font.size = docx.shared.Pt(16)
     return doc
 
+
 class ProcessNarration:
     def __init__(self, language_num):
         self.language_num = language_num
@@ -103,6 +104,7 @@ class ProcessNarration:
         doc.save(self.file_stream)
         self.file_stream.seek(0)
         return self.file_stream
+
 
 def process_file_animation():
     return
