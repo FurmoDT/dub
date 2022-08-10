@@ -65,7 +65,7 @@ def read_input():
         data['filename'] = filename
         assert format in ('xls', 'xlsx')
         df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
-        df = df.where(pd.notnull(df), None)
+        df = df.where(pd.notnull(df), None).astype(str)
         data['columns'] = df.columns
         data['value'] = df.values.tolist()
     except (AttributeError, ValueError, AssertionError):
