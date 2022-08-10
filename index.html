@@ -54,67 +54,77 @@ import docx
 
 file_input = pn.widgets.FileInput(accept='.xls', width=180)
 upload_button = pn.widgets.Button(name='Upload', button_type = 'primary', width= 100)
+row_download = pn.Row(height=75)
+
+data = {'value': None, 'filename': None, 'columns': None}
 
 
 def read_input():
-    df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
-    df = df.where(pd.notnull(df), None)
-    value = df.values.tolist()
-    filename_save = file_input.filename.split('.')[0]
+    try:
+        filename, format = file_input.filename.split('.')
+        data['filename'] = filename
+        assert format in ('xls', 'xlsx')
+        df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
+        df = df.where(pd.notnull(df), None)
+        data['columns'] = df.columns
+        data['value'] = df.values.tolist()
+    except (AttributeError, ValueError, AssertionError):
+        data['value'] = data['filename'] = data['columns'] = None
+        return
+
+
+def create_doc():
     doc = Document()
     style = doc.styles['Normal']
     style.font.name = '맑은 고딕'
     style._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
     style.font.size = docx.shared.Pt(10)
     title = doc.add_paragraph()
-    run = title.add_run(filename_save)
+    run = title.add_run(data['filename'])
     run.bold = True
     run.font.size = docx.shared.Pt(16)
-    return value, doc
+    return doc
 
+class ProcessNarration:
+    def __init__(self, language_num):
+        self.language_num = language_num
+    def __call__(self):
+        doc = create_doc()
+        for i in data['value']:
+            br = doc.add_paragraph()
+            tc_in = doc.add_paragraph()
+            source = doc.add_paragraph()
+            target = doc.add_paragraph()
+            br.add_run('')
+            tc_in.add_run(i[1])
+            source.add_run(i[3])
+            target.add_run(i[4])
+        self.file_stream = io.BytesIO()
+        doc.save(self.file_stream)
+        self.file_stream.seek(0)
+        return self.file_stream
 
-def process_file_narration():
-    value, doc = read_input()
-
-    for i in value:
-        br = doc.add_paragraph()
-        tc_in = doc.add_paragraph()
-        source = doc.add_paragraph()
-        target = doc.add_paragraph()
-        br.add_run('')
-        tc_in.add_run(i[1])
-        source.add_run(i[3])
-        target.add_run(i[4])
-    file_stream = io.BytesIO()
-    doc.save(file_stream)
-    file_stream.seek(0)
-    return file_stream
-
-
-def process_file_animation():
-    value, doc = read_input()
-    return
-
-file_download_narration = pn.widgets.FileDownload(filename="docx", callback=process_file_narration,
-                                                  button_type="primary", disabled=True, name="내레이션용 대본")
-file_download_animation = pn.widgets.FileDownload(filename="docx", callback=process_file_animation,
-                                                  button_type="primary", disabled=True, name="애니메이션용 대본")
-
+<!--def process_file_animation():-->
+<!--    value, doc = read_input()-->
+<!--    return-->
+<!--file_download_animation = pn.widgets.FileDownload(filename="docx", callback=process_file_animation,-->
+<!--                                                  button_type="primary", disabled=True, name="애니메이션용 대본")-->
 
 def upload_file(event):
+    read_input()
+    row_download.clear()
     try:
-        filename, format = file_input.filename.split('.')
-        assert format in ('xls', 'xlsx')
-        file_download_narration.filename = file_download_animation.filename = filename + ".docx"
-        file_download_narration.disabled = file_download_animation.disabled = False
-    except (ValueError, AssertionError):
-        file_download_narration.filename = file_download_animation.filename = "docx"
-        file_download_narration.disabled = file_download_animation.disabled = True
+        narration_downloads = (pn.widgets.FileDownload(filename="{}.docx".format(data['filename']),
+                                                       callback=ProcessNarration(i),
+                                                       button_type="primary",
+                                                       name="{} 대본".format(data['columns'][3] + '+' + j)) for i, j in enumerate(data['columns'][4:]))
+        row_download.append(pn.Column(*narration_downloads))
+    except TypeError:
         return
+    return
 
 upload_button.on_click(upload_file)
 row_input = pn.Row(file_input, upload_button, height=75)
-row_download = pn.Row(file_download_narration, file_download_animation, height=75)
 
 await show(row_input, 'fileinput')
 await show(row_download, 'filedownload')
