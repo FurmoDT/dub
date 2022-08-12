@@ -33,10 +33,12 @@
                 <a class="title" href="" style="color: #f7f6f3;">더빙 대본 생성</a>
             </div>
         </nav>
-        <div id="divElement">
-            <div class="row overflow-hidden" id="content">
-                <div class="col mh-100 float-left" id="main">
+        <div class="row overflow-hidden" id="content">
+            <div class="col mh-100 float-left" id="main">
+                <div id="divElement">
                     <div id="fileinput"></div>
+                </div>
+                <div id="divElement">
                     <div id="filedownload"></div>
                 </div>
             </div>
@@ -52,7 +54,7 @@ from docx import Document
 from docx.oxml.ns import qn
 import docx
 
-file_input = pn.widgets.FileInput(accept='.xls', width=180)
+file_input = pn.widgets.FileInput(accept='.xls', width=300)
 upload_button = pn.widgets.Button(name='Upload', button_type = 'primary', width= 100)
 row_download = pn.Row(height=75)
 
