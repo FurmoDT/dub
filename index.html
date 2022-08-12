@@ -79,10 +79,7 @@ def create_doc():
     style.font.name = '맑은 고딕'
     style._element.rPr.rFonts.set(qn('w:eastAsia'), '맑은 고딕')
     style.font.size = docx.shared.Pt(10)
-    title = doc.add_paragraph()
-    run = title.add_run(data['filename'])
-    run.bold = True
-    run.font.size = docx.shared.Pt(16)
+    doc.add_heading(data['filename'], 0)
     return doc
 
 
