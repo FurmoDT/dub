@@ -52,6 +52,7 @@ from panel.io.pyodide import show
 
 from docx import Document
 from docx.oxml.ns import qn
+from docx.shared import Cm
 import docx
 
 file_input = pn.widgets.FileInput(accept='.xls', width=300)
@@ -59,7 +60,7 @@ upload_button = pn.widgets.Button(name='Upload', button_type = 'primary', width=
 row_download = pn.Row(height=75)
 
 data = {'value': None, 'filename': None, 'columns': None}
-
+CELL_SIZE = (Cm(1), Cm(2), Cm(20))
 
 def read_input():
     try:
@@ -67,7 +68,7 @@ def read_input():
         data['filename'] = filename
         assert format in ('xls', 'xlsx')
         df = pd.read_excel(file_input.value, sheet_name=0, engine='xlrd')
-        df = df.where(pd.notnull(df), None).astype(str)
+        df = df.where(pd.notnull(df), '').astype(str)
         data['columns'] = df.columns
         data['value'] = df.values.tolist()
     except (AttributeError, ValueError, AssertionError):
@@ -90,15 +91,16 @@ class ProcessNarration:
         self.language_num = language_num
     def __call__(self):
         doc = create_doc()
-        for i in data['value']:
-            br = doc.add_paragraph()
-            tc_in = doc.add_paragraph()
-            source = doc.add_paragraph()
-            target = doc.add_paragraph()
-            br.add_run('')
-            tc_in.add_run(i[1])
-            source.add_run(i[3])
-            target.add_run(i[4 + self.language_num])
+        table = doc.add_table(0, 3)
+        for value in data['value']:
+            row_cell = table.add_row().cells
+            tc_in = value[1]
+            source = value[3]
+            target = value[4 + self.language_num]
+            row_cell[0].width = CELL_SIZE[0]
+            row_cell[2].width = CELL_SIZE[2]
+            row_cell[0].paragraphs[0].add_run(tc_in)
+            row_cell[2].paragraphs[0].add_run(source + '\n' + target + '\n')
         self.file_stream = io.BytesIO()
         doc.save(self.file_stream)
         self.file_stream.seek(0)
@@ -110,17 +112,19 @@ class ProcessAnimation:
         self.language_num = language_num
     def __call__(self):
         doc = create_doc()
-        for i in data['value']:
-            br = doc.add_paragraph()
-            tc_in = doc.add_paragraph()
-            character = doc.add_paragraph()
-            source = doc.add_paragraph()
-            target = doc.add_paragraph()
-            br.add_run('')
-            tc_in.add_run(i[1])
-            character.add_run(i[3])
-            source.add_run(i[4])
-            target.add_run(i[5 + self.language_num])
+        table = doc.add_table(0, 3)
+        for value in data['value']:
+            row_cell = table.add_row().cells
+            tc_in = value[1]
+            character = value[3]
+            source = value[4]
+            target = value[5 + self.language_num]
+            for i in range(len(CELL_SIZE)):
+                row_cell[i].width = CELL_SIZE[i]
+            row_cell[0].paragraphs[0].add_run(tc_in)
+            row_cell[1].paragraphs[0].add_run(character)
+            row_cell[2].paragraphs[0].add_run(source + '\n' + target + '\n')
+
         self.file_stream = io.BytesIO()
         doc.save(self.file_stream)
         self.file_stream.seek(0)
