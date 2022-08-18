@@ -91,16 +91,16 @@ class ProcessNarration:
         self.language_num = language_num
     def __call__(self):
         doc = create_doc()
-        table = doc.add_table(0, 3)
+        table = doc.add_table(0, 2)
         for value in data['value']:
             row_cell = table.add_row().cells
             tc_in = value[1]
             source = value[3]
             target = value[4 + self.language_num]
             row_cell[0].width = CELL_SIZE[0]
-            row_cell[2].width = CELL_SIZE[2]
+            row_cell[1].width = CELL_SIZE[2]
             row_cell[0].paragraphs[0].add_run(tc_in)
-            row_cell[2].paragraphs[0].add_run(source + '\n' + target + '\n')
+            row_cell[1].paragraphs[0].add_run(source + '\n' + target + '\n')
         self.file_stream = io.BytesIO()
         doc.save(self.file_stream)
         self.file_stream.seek(0)
