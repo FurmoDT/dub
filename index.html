@@ -116,7 +116,9 @@ class ProcessAnimation:
         for value in data['value']:
             row_cell = table.add_row().cells
             tc_in = value[1]
-            character = value[3]
+            character = ''
+            for i in range(len(value[3]) // 7 + 1):
+                character += value[3][i * 7: (i + 1) * 7] + '\n'
             source = value[4]
             target = value[5 + self.language_num]
             for i in range(len(CELL_SIZE)):
