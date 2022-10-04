@@ -95,8 +95,8 @@ class ProcessNarration:
         for value in data['value']:
             row_cell = table.add_row().cells
             tc_in = value[1]
-            source = value[3]
-            target = value[4 + self.language_num]
+            source = value[3].replace('|', '\n')
+            target = value[4 + self.language_num].replace('|', '\n')
             row_cell[0].width = CELL_SIZE[0]
             row_cell[1].width = CELL_SIZE[2]
             row_cell[0].paragraphs[0].add_run(tc_in)
@@ -119,8 +119,8 @@ class ProcessAnimation:
             character = ''
             for i in range(len(value[3]) // 7 + 1):
                 character += value[3][i * 7: (i + 1) * 7] + '\n'
-            source = value[4]
-            target = value[5 + self.language_num]
+            source = value[4].replace('|', '\n')
+            target = value[5 + self.language_num].replace('|', '\n')
             for i in range(len(CELL_SIZE)):
                 row_cell[i].width = CELL_SIZE[i]
             row_cell[0].paragraphs[0].add_run(tc_in)
